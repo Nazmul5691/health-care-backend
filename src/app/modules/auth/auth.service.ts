@@ -3,6 +3,7 @@ import { prisma } from "../../shared/prisma";
 import { UserStatus } from "@prisma/client";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { jwtHelpers } from "../../helper/jwtHelpers";
 
 
 const login = async (payload: {email: string, password: string}) => {
@@ -21,20 +22,15 @@ const login = async (payload: {email: string, password: string}) => {
     }
 
 
-    const accessToken = jwt.sign({email: user.email, role: user.role}, "abcd", {
-        algorithm: "HS256",
-        expiresIn: "1h"
-    })
+    const accessToken = jwtHelpers.generateToken({email: user.email, role: user.role}, "abcd", "1h")
     
-    const refreshToken = jwt.sign({email: user.email, role: user.role}, "abcd", {
-        algorithm: "HS256",
-        expiresIn: "1h"
-    })
+    const refreshToken = jwtHelpers.generateToken({email: user.email, role: user.role}, "abcd", "90d")
 
 
     return {
         accessToken,
-        refreshToken
+        refreshToken,
+        needPasswordChange: user.needPasswordChange
     };
 }
 
