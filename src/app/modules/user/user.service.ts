@@ -34,7 +34,7 @@ const createPatient = async (req: Request) => {
 }
 
 
-const getAllUsers = async ({ page, limit, searchTerm, sortBy, sortOrder }: { page: number, limit: number, searchTerm?: any, sortBy: any, sortOrder: any }) => {
+const getAllUsers = async ({ page, limit, searchTerm, sortBy, sortOrder, role, status }: { page: number, limit: number, searchTerm?: any, sortBy: any, sortOrder: any, role: any, status: any }) => {
 
     const pageNumber = page || 1;
     const limitNumber = limit || 10;
@@ -49,7 +49,9 @@ const getAllUsers = async ({ page, limit, searchTerm, sortBy, sortOrder }: { pag
             email: {
                 contains: searchTerm,
                 mode: 'insensitive'
-            }
+            },
+            role: role,
+            status: status
         },
         orderBy: sortBy && sortOrder ? {
             [sortBy]: sortOrder
