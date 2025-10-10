@@ -21,8 +21,8 @@ const createPatient = catchAsync(async(req:Request, res: Response) =>{
 
 const getAllUsers = catchAsync(async(req:Request, res: Response) =>{
 
-    const {page, limit} = req.query;
-    const result = await UserService.getAllUsers({ page: Number(page), limit: Number(limit)});
+    const {page, limit, searchTerm, sortBy, sortOrder} = req.query;
+    const result = await UserService.getAllUsers({ page: Number(page), limit: Number(limit), searchTerm, sortBy, sortOrder});
 
     // console.log(req.body);
 
