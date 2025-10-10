@@ -19,6 +19,25 @@ const createPatient = catchAsync(async(req:Request, res: Response) =>{
 
 
 
+const getAllUsers = catchAsync(async(req:Request, res: Response) =>{
+
+    const {page, limit} = req.query;
+    const result = await UserService.getAllUsers({ page: Number(page), limit: Number(limit)});
+
+    // console.log(req.body);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: 'User retrieved successfully',
+        data: result
+    })
+
+})
+
+
+
 export const UserController = {
-    createPatient
+    createPatient,
+    getAllUsers
 }
