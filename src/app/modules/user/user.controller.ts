@@ -22,10 +22,13 @@ const createPatient = catchAsync(async (req: Request, res: Response) => {
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 
+    const filters = pick(req.query, ["status", "role", "email"])
     const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"])
 
-    const { page, limit, searchTerm, sortBy, sortOrder, role, status } = req.query;
-    const result = await UserService.getAllUsers({ page: Number(page), limit: Number(limit), searchTerm, sortBy, sortOrder, role, status });
+    // const { page, limit, searchTerm, sortBy, sortOrder, role, status } = req.query;
+    // const result = await UserService.getAllUsers({ page: Number(page), limit: Number(limit), searchTerm, sortBy, sortOrder, role, status });
+
+    const result = await UserService.getAllUsers(filters, options);
 
     // console.log(req.body);
 
