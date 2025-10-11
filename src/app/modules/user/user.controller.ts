@@ -22,7 +22,7 @@ const createPatient = catchAsync(async (req: Request, res: Response) => {
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 
-    const filters = pick(req.query, ["status", "role", "email"])
+    const filters = pick(req.query, ["status", "role", "email", "searchTerm"])
     const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"])
 
     // const { page, limit, searchTerm, sortBy, sortOrder, role, status } = req.query;
@@ -36,7 +36,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
         statusCode: 201,
         success: true,
         message: 'User retrieved successfully',
-        data: result
+        meta: result.meta,
+        data: result.data
     })
 
 })
