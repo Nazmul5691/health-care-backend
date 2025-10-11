@@ -4,7 +4,7 @@ import { createPatientInput } from "./user.interface";
 import bcrypt from "bcryptjs";
 import { fileUploader } from "../../helper/fileUploader";
 import { pagination } from "../../helper/pagination";
-import { Prisma } from "@prisma/client";
+import { Admin, Doctor, Prisma, UserRole } from "@prisma/client";
 import { userSearchableFields } from "./user.constant";
 
 const createPatient = async (req: Request) => {
@@ -35,6 +35,70 @@ const createPatient = async (req: Request) => {
     return result;
 
 }
+
+
+const createAdmin = async (req: Request): Promise<Admin> => {
+
+    const file = req.file;
+
+    if (file) {
+        const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+        req.body.admin.profilePhoto = uploadToCloudinary?.secure_url
+    }
+
+    const hashedPassword: string = await bcrypt.hash(req.body.password, 10)
+
+    const userData = {
+        email: req.body.admin.email,
+        password: hashedPassword,
+        role: UserRole.ADMIN
+    }
+
+    const result = await prisma.$transaction(async (transactionClient) => {
+        await transactionClient.user.create({
+            data: userData
+        });
+
+        const createdAdminData = await transactionClient.admin.create({
+            data: req.body.admin
+        });
+
+        return createdAdminData;
+    });
+
+    return result;
+};
+
+const createDoctor = async (req: Request): Promise<Doctor> => {
+
+    const file = req.file;
+
+    if (file) {
+        const uploadToCloudinary = await fileUploader.uploadToCloudinary(file);
+        req.body.doctor.profilePhoto = uploadToCloudinary?.secure_url
+    }
+    const hashedPassword: string = await bcrypt.hash(req.body.password, 10)
+
+    const userData = {
+        email: req.body.doctor.email,
+        password: hashedPassword,
+        role: UserRole.DOCTOR
+    }
+
+    const result = await prisma.$transaction(async (transactionClient) => {
+        await transactionClient.user.create({
+            data: userData
+        });
+
+        const createdDoctorData = await transactionClient.doctor.create({
+            data: req.body.doctor
+        });
+
+        return createdDoctorData;
+    });
+
+    return result;
+};
 
 
 const getAllUsers = async (params: any, options: any) => {
@@ -99,5 +163,7 @@ const getAllUsers = async (params: any, options: any) => {
 
 export const UserService = {
     createPatient,
-    getAllUsers
+    getAllUsers,
+    createDoctor, 
+    createAdmin
 }
