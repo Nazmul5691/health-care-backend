@@ -8,6 +8,8 @@ import auth from "../../middlewares/auth";
 const router = express.Router()
 
 
+
+
 router.get("/", auth(UserRole.ADMIN), UserController.getAllUsers);
 
 router.post("/create-patient",
