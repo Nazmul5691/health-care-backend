@@ -68,7 +68,7 @@ const insertIntoDb = async (payload: any) => {
     }
 
 
-    return payload;
+    return schedules;
 
 }
 
