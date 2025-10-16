@@ -5,6 +5,7 @@ import pick from "../../helper/pick";
 import { DoctorService } from "./doctor.service";
 import sendResponse from "../../shared/sendResponse";
 import { doctorFilterableFields } from "./doctor.constant";
+import { ca } from "zod/v4/locales";
 
 const getAllFromDB = catchAsync(async (req: Request, res: Response) => {
     const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
@@ -70,10 +71,21 @@ const softDelete = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAISuggestions = catchAsync(async (req: Request, res: Response) => {
+    const result = await DoctorService.getAISuggestions(req.body);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'AI suggestions fetched successfully',
+        data: result,
+    });
+});
+
 export const DoctorController = {
     getAllFromDB,
     updateIntoDB,
     getByIdFromDB,
     deleteFromDB,
     softDelete,
+    getAISuggestions
 }

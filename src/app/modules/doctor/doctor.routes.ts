@@ -9,6 +9,8 @@ router.get(
     DoctorController.getAllFromDB
 );
 
+router.post("/suggestion", DoctorController.getAISuggestions);
+
 router.get('/:id', DoctorController.getByIdFromDB);
 
 router.patch(
@@ -27,6 +29,7 @@ router.delete(
     '/soft/:id',
     auth(UserRole.ADMIN),
     DoctorController.softDelete);
+
 
 
 export const DoctorRoutes = router;
