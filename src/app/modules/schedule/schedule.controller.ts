@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import { ScheduleService } from "./schedule.service";
+import { IJWTPayload } from "../../types/common";
+import pick from "../../helper/pick";
 
 
 
@@ -16,7 +18,23 @@ const insertIntoDb = catchAsync(async (req: Request, res: Response) => {
         message: 'schedule created successfully',
         data: result
     })
+})
 
+
+const schedulesForDoctor = catchAsync(async (req: Request , res: Response) => {
+    const options = pick(req.query, ["page", "limit", "sortBy", "sortOrder"]);
+    const filters = pick(req.query, ["startDateTime", "endDateTime"])
+
+    // const user = req.user;
+    const result = await ScheduleService.schedulesForDoctor( filters, options);
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Schedule fetched successfully!",
+        meta: result.meta,
+        data: result.data
+    })
 })
 
 
@@ -24,5 +42,6 @@ const insertIntoDb = catchAsync(async (req: Request, res: Response) => {
 
 export const ScheduleController = {
     insertIntoDb,
-    
+    schedulesForDoctor
+
 }
