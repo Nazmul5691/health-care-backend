@@ -10,13 +10,13 @@ const insertIntoDb = async (payload: any) => {
     const currentDate = new Date(startDate);
     const lastDate = new Date(endDate);
 
-    const schedule = [];
+    const schedules = [];
 
     while (currentDate <= lastDate) {
         const startDateTime = new Date(
             addMinutes(
                 addHours(
-                    `${format(currentDate, "yyyy-mm-dd")}`,
+                    `${format(currentDate, "yyyy-MM-dd")}`,
                     Number(startTime.split(":")[0])
                 ),
                 Number(startTime.split(":")[1])
@@ -28,7 +28,7 @@ const insertIntoDb = async (payload: any) => {
         const endDateTime = new Date(
             addMinutes(
                 addHours(
-                    `${format(currentDate, "yyyy-mm-dd")}`,
+                    `${format(currentDate, "yyyy-MM-dd")}`,
                     Number(endTime.split(":")[0])
                 ),
                 Number(endTime.split(":")[1])
@@ -56,12 +56,14 @@ const insertIntoDb = async (payload: any) => {
                 const result = await prisma.schedule.create({
                     data: scheduleData
                 });
-                schedule.push(result)
+                schedules.push(result)
 
             }
+
+            slotStartDateTime.setMinutes(slotStartDateTime.getMinutes() + intervalTime);
         }
 
-
+        currentDate.setDate(currentDate.getDate() + 1);
 
     }
 
