@@ -11,7 +11,8 @@ const router = express.Router()
 
 
 router.post("/", ScheduleController.insertIntoDb);
-router.get("/", ScheduleController.schedulesForDoctor)
+router.get("/", ScheduleController.schedulesForDoctor);
+router.delete("/:id", ScheduleController.deleteScheduleFromDB);
 
 
 export const ScheduleRoutes = router;
