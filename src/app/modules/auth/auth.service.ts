@@ -2,9 +2,9 @@
 import { prisma } from "../../shared/prisma";
 import { UserStatus } from "@prisma/client";
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import { jwtHelpers } from "../../helper/jwtHelpers";
-
+import httpStatus from "http-status"
+import ApiError from "../../errors/apiError";
 
 const login = async (payload: {email: string, password: string}) => {
     const user = await prisma.user.findUniqueOrThrow({
@@ -18,7 +18,7 @@ const login = async (payload: {email: string, password: string}) => {
     const password = await bcrypt.compare(payload.password, user.password)
 
     if(!password){
-        throw new Error("Password is incorrect")
+        throw new ApiError( httpStatus.BAD_REQUEST,"Password is incorrect")
     }
 
 
