@@ -10,9 +10,9 @@ const router = express.Router()
 
 
 
-router.post("/", ScheduleController.insertIntoDb);
+router.post("/", auth(UserRole.ADMIN), ScheduleController.insertIntoDb);
 router.get("/", auth(UserRole.DOCTOR, UserRole.ADMIN), ScheduleController.schedulesForDoctor);
-router.delete("/:id", ScheduleController.deleteScheduleFromDB);
+router.delete("/:id",auth(UserRole.ADMIN), ScheduleController.deleteScheduleFromDB);
 
 
 export const ScheduleRoutes = router;
