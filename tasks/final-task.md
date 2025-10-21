@@ -33,6 +33,8 @@
    * Retrieve all reviews with **pagination**, **searching**, **filtering**, and **sorting** functionality.
    * **Access:** Public (available to all users).
 
+   Solution: https://github.com/Apollo-Level2-Web-Dev/ph-health-care-server/commit/a1f7fff5220d8cdbe77251548c9fe197806c29ba
+
 6. **Update My Profile (Admin, Doctor, Patient)**
 
    * Allow users (Admin, Doctor, Patient) to update their own profile information.
