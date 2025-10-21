@@ -12,15 +12,21 @@
    * Retrieve all doctor schedules with **pagination**, **searching**, **filtering**, and **sorting** functionality.
    * **Access:** Admin only.
 
+   solution: https://github.com/Apollo-Level2-Web-Dev/ph-health-care-server/commit/31e910da01b546804c1951d692275180e7e9b1e6
+
 3. **Get My Doctor Schedules (Doctor Only)**
 
    * Retrieve the authenticated doctor’s own schedules with **pagination**, **searching**, **filtering**, and **sorting** functionality.
    * **Access:** Doctor only.
 
+   solution: https://github.com/Apollo-Level2-Web-Dev/ph-health-care-server/commit/31e910da01b546804c1951d692275180e7e9b1e6
+
 4. **Delete Doctor Schedule by ID (Doctor Only)**
 
    * Allow a doctor to delete **only their own schedule** by schedule ID.
    * **Access:** Doctor only.
+
+   solution: https://github.com/Apollo-Level2-Web-Dev/ph-health-care-server/commit/31e910da01b546804c1951d692275180e7e9b1e6
 
 5. **Get All Reviews (Public)**
 
