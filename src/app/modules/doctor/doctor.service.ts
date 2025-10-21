@@ -1,12 +1,12 @@
-import { Doctor, Prisma } from "@prisma/client";
+import { Doctor, Prisma, UserStatus } from "@prisma/client";
+import { IOptions, pagination } from "../../helper/pagination";
 import { doctorSearchableFields } from "./doctor.constant";
 import { prisma } from "../../shared/prisma";
 import { IDoctorUpdateInput } from "./doctor.interface";
-import { IOptions, pagination } from "../../helper/pagination";
-import httpStatus from "http-status"
 import ApiError from "../../errors/ApiError";
-import { openai } from "../../helper/openRouter";
+import httpStatus from 'http-status';
 import { extractJsonFromMessage } from "../../helper/extractJsonFromMessage";
+import { openai } from "../../helper/openRouter";
 
 const getAllFromDB = async (filters: any, options: IOptions) => {
     const { page, limit, skip, sortBy, sortOrder } = pagination.calculatePagination(options);
@@ -83,8 +83,6 @@ const getAllFromDB = async (filters: any, options: IOptions) => {
     }
 }
 
-
-
 const updateIntoDB = async (id: string, payload: Partial<IDoctorUpdateInput>) => {
     const doctorInfo = await prisma.doctor.findUniqueOrThrow({
         where: {
@@ -142,12 +140,75 @@ const updateIntoDB = async (id: string, payload: Partial<IDoctorUpdateInput>) =>
 
 }
 
+const getByIdFromDB = async (id: string): Promise<Doctor | null> => {
+    const result = await prisma.doctor.findUnique({
+        where: {
+            id,
+            isDeleted: false,
+        },
+        include: {
+            doctorSpecialties: {
+                include: {
+                    specialities: true,
+                },
+            },
+            doctorSchedules: {
+                include: {
+                    schedule: true
+                }
+            }
+        },
+    });
+    return result;
+};
 
-const getAiSuggestions = async (payload: { symptoms: string }) => {
+const deleteFromDB = async (id: string): Promise<Doctor> => {
+    return await prisma.$transaction(async (transactionClient) => {
+        const deleteDoctor = await transactionClient.doctor.delete({
+            where: {
+                id,
+            },
+        });
+
+        await transactionClient.user.delete({
+            where: {
+                email: deleteDoctor.email,
+            },
+        });
+
+        return deleteDoctor;
+    });
+};
+
+const softDelete = async (id: string): Promise<Doctor> => {
+    return await prisma.$transaction(async (transactionClient) => {
+        const deleteDoctor = await transactionClient.doctor.update({
+            where: { id },
+            data: {
+                isDeleted: true,
+            },
+        });
+
+        await transactionClient.user.update({
+            where: {
+                email: deleteDoctor.email,
+            },
+            data: {
+                status: UserStatus.DELETED,
+            },
+        });
+
+        return deleteDoctor;
+    });
+};
+
+
+
+
+const getAISuggestions = async (payload: { symptoms: string }) => {
     if (!(payload && payload.symptoms)) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "symptoms is required")
-    }
-
+        throw new ApiError(httpStatus.BAD_REQUEST, "symptoms is required!")
+    };
 
     const doctors = await prisma.doctor.findMany({
         where: { isDeleted: false },
@@ -158,13 +219,9 @@ const getAiSuggestions = async (payload: { symptoms: string }) => {
                 }
             }
         }
-
-
-    })
-
+    });
 
     console.log("doctors data loaded.......\n");
-
     const prompt = `
 You are a medical assistant AI. Based on the patient's symptoms, suggest the top 3 most suitable doctors.
 Each doctor has specialties and years of experience.
@@ -177,8 +234,6 @@ ${JSON.stringify(doctors, null, 2)}
 
 Return your response in JSON format with full individual doctor data. 
 `;
-
-    // console.log(doctors);
 
     console.log("analyzing......\n")
     const completion = await openai.chat.completions.create({
@@ -196,16 +251,15 @@ Return your response in JSON format with full individual doctor data.
         ],
     });
 
-    console.log(completion.choices[0].message);
     const result = await extractJsonFromMessage(completion.choices[0].message)
     return result;
 }
 
-
-
-
 export const DoctorService = {
     getAllFromDB,
     updateIntoDB,
-    getAiSuggestions
+    getByIdFromDB,
+    deleteFromDB,
+    softDelete,
+    getAISuggestions
 }
