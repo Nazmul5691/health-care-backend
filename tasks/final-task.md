@@ -39,3 +39,5 @@
 
    * Allow users (Admin, Doctor, Patient) to update their own profile information.
    * **Access:** Authenticated users (role-based restrictions apply).
+
+   Solution: https://github.com/Apollo-Level2-Web-Dev/ph-health-care-server/commit/edf69c350ce2376ab897f88871e4bc2d1c779016
