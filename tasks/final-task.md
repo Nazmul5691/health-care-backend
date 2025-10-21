@@ -5,6 +5,8 @@
    * Retrieve all appointments with **pagination**, **searching**, **filtering**, and **sorting** functionality.
    * **Access:** Admin only.
 
+   Solution: https://github.com/Apollo-Level2-Web-Dev/ph-health-care-server/commit/7a9c16feabc2fd1e1f3ec3d4ea4606d270facf0a
+
 2. **Get All Doctor Schedules (Admin Only)**
 
    * Retrieve all doctor schedules with **pagination**, **searching**, **filtering**, and **sorting** functionality.
