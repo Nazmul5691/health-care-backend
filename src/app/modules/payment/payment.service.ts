@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import { prisma } from "../../shared/prisma";
 import { PaymentStatus } from "@prisma/client";
 
+
 const handleStripeWebhookEvent = async (event: Stripe.Event) => {
     switch (event.type) {
         case "checkout.session.completed": {
@@ -36,6 +37,8 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
             console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }
 };
+
+
 
 export const PaymentService = {
     handleStripeWebhookEvent
