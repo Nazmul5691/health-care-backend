@@ -18,4 +18,16 @@ router.post(
     AppointmentController.createAppointment
 )
 
+
+router.patch(
+    "/status/:id",
+    auth(UserRole.ADMIN, UserRole.DOCTOR),
+    AppointmentController.updateAppointmentStatus
+)
+
+
+
+//get all data from db - admin
+
+
 export const AppointmentRoutes = router;
