@@ -8,6 +8,8 @@ import { timeStamp } from 'console';
 import router from './app/routes';
 import cookieParser from 'cookie-parser';
 import { PaymentController } from './app/modules/payment/payment.controller';
+import cron from 'node-cron';
+import { AppointmentService } from './app/modules/appointment/appointment.service';
 
 
 
@@ -29,6 +31,29 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+
+
+
+
+// cron.schedule('* * * * *', () => {
+//     try {
+//         console.log("Node cron called at ", new Date());
+//         AppointmentService.cancelUnpaidAppointments();
+//     } catch (err) {
+//         console.error(err);
+//     }
+// });
+
+
+cron.schedule('* * * * *', async () => {
+    try {
+        console.log("Node cron called at ", new Date());
+        await AppointmentService.cancelUnpaidAppointments(); // <-- await here
+        console.log("cancelUnpaidAppointments finished at", new Date());
+    } catch (err) {
+        console.error("Error in cron cancelUnpaidAppointments:", err);
+    }
+});
 
 
 app.use("/api/v1", router);

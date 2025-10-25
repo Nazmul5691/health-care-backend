@@ -1,4 +1,4 @@
-import { AppointmentStatus, Prisma, UserRole } from "@prisma/client";
+import { AppointmentStatus, PaymentStatus, Prisma, UserRole } from "@prisma/client";
 import { IOptions, pagination } from "../../helper/pagination";
 import { stripe } from "../../helper/stripe";
 import { prisma } from "../../shared/prisma";
@@ -58,7 +58,7 @@ const createAppointment = async (user: IJWTPayload, payload: { doctorId: string,
 
         const transactionId = uuidv4();
 
-       const paymentData = await tnx.payment.create({
+        const paymentData = await tnx.payment.create({
             data: {
                 appointmentId: appointmentData.id,
                 amount: doctorData.appointmentFee,
@@ -94,7 +94,7 @@ const createAppointment = async (user: IJWTPayload, payload: { doctorId: string,
         console.log(session);
 
         // return appointmentData;
-        return {paymentUrl : session.url};
+        return { paymentUrl: session.url };
     })
 
 
@@ -192,8 +192,185 @@ const updateAppointmentStatus = async (appointmentId: string, status: Appointmen
 
 
 
+const getAllFromDB = async (filters: any, options: IOptions) => {
+    const { limit, page, skip } = pagination.calculatePagination(options);
+    const { patientEmail, doctorEmail, ...filterData } = filters;
+    const andConditions = [];
+
+    if (patientEmail) {
+        andConditions.push({
+            patient: {
+                email: patientEmail
+            }
+        })
+    }
+    else if (doctorEmail) {
+        andConditions.push({
+            doctor: {
+                email: doctorEmail
+            }
+        })
+    }
+
+    if (Object.keys(filterData).length > 0) {
+        andConditions.push({
+            AND: Object.keys(filterData).map((key) => {
+                return {
+                    [key]: {
+                        equals: (filterData as any)[key]
+                    }
+                };
+            })
+        });
+    }
+
+    // console.dir(andConditions, { depth: Infinity })
+    const whereConditions: Prisma.AppointmentWhereInput =
+        andConditions.length > 0 ? { AND: andConditions } : {};
+
+    const result = await prisma.appointment.findMany({
+        where: whereConditions,
+        skip,
+        take: limit,
+        orderBy:
+            options.sortBy && options.sortOrder
+                ? { [options.sortBy]: options.sortOrder }
+                : {
+                    createdAt: 'desc',
+                },
+        include: {
+            doctor: true,
+            patient: true
+        }
+    });
+    const total = await prisma.appointment.count({
+        where: whereConditions
+    });
+
+    return {
+        meta: {
+            total,
+            page,
+            limit,
+        },
+        data: result,
+    };
+};
+
+
+// const cancelUnpaidAppointments = async () => {
+//     const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+//     const unPaidAppointments = await prisma.appointment.findMany({
+//         where: {
+//             createdAt: {
+//                 lte: thirtyMinAgo
+//             },
+//             paymentStatus: PaymentStatus.UNPAID
+//         }
+//     })
+
+//     const appointmentIdsToCancel = unPaidAppointments.map(appointment => appointment.id);
+
+//     await prisma.$transaction(async (tnx) => {
+//         await tnx.payment.deleteMany({
+//             where: {
+//                 appointmentId: {
+//                     in: appointmentIdsToCancel
+//                 }
+//             }
+//         })
+
+//         await tnx.appointment.deleteMany({
+//             where: {
+//                 id: {
+//                     in: appointmentIdsToCancel
+//                 }
+//             }
+//         })
+
+//         for (const unPaidAppointment of unPaidAppointments) {
+//             await tnx.doctorSchedules.update({
+//                 where: {
+//                     doctorId_scheduleId: {
+//                         doctorId: unPaidAppointment.doctorId,
+//                         scheduleId: unPaidAppointment.scheduleId
+//                     }
+//                 },
+//                 data: {
+//                     isBooked: false
+//                 }
+//             })
+//         }
+//     })
+// }
+
+
+const cancelUnpaidAppointments = async () => {
+    const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);    // after 30 minute the unpaid appointment will auto canceled 
+
+    const unPaidAppointments = await prisma.appointment.findMany({
+        where: {
+            createdAt: {
+                lte: thirtyMinAgo,
+            },
+            paymentStatus: PaymentStatus.UNPAID,
+        },
+    });
+
+    if (unPaidAppointments.length === 0) {
+        console.log("🕐 No unpaid appointments to cancel.");
+        return;
+    }
+
+    const appointmentIdsToCancel = unPaidAppointments.map((a) => a.id);
+
+    console.log(
+        `🧹 Found ${appointmentIdsToCancel.length} unpaid appointments to delete`
+    );
+
+    await prisma.$transaction(async (tx) => {
+        // 1️⃣ First, free up the doctor schedules
+        for (const a of unPaidAppointments) {
+            await tx.doctorSchedules.updateMany({
+                where: {
+                    doctorId: a.doctorId,
+                    scheduleId: a.scheduleId,
+                },
+                data: {
+                    isBooked: false,
+                },
+            });
+        }
+
+        // 2️⃣ Delete related payments first
+        await tx.payment.deleteMany({
+            where: {
+                appointmentId: {
+                    in: appointmentIdsToCancel,
+                },
+            },
+        });
+
+        // 3️⃣ Then delete the appointments
+        await tx.appointment.deleteMany({
+            where: {
+                id: {
+                    in: appointmentIdsToCancel,
+                },
+            },
+        });
+    });
+
+    console.log(`✅ Deleted ${appointmentIdsToCancel.length} unpaid appointments`);
+};
+
+
+
 export const AppointmentService = {
     createAppointment,
     getMyAppointment,
-    updateAppointmentStatus
+    updateAppointmentStatus,
+    getAllFromDB,
+    cancelUnpaidAppointments
 };
