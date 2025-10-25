@@ -105,6 +105,7 @@ const softDelete = async (id: string): Promise<Patient | null> => {
 // PatientHealthData, MedicalReport, patient
 
 const updateIntoDB = async (user: IJWTPayload, payload: any) => {
+    
     const { medicalReport, patientHealthData, ...patientData } = payload;
 
     const patientInfo = await prisma.patient.findUniqueOrThrow({

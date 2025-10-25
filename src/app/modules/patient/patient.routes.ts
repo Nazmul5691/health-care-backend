@@ -11,16 +11,19 @@ router.get(
     PatientController.getAllFromDB
 );
 
-router.get(
-    '/:id',
-    PatientController.getByIdFromDB
-);
 
 router.patch(
     '/',
     auth(UserRole.PATIENT),
     PatientController.updateIntoDB
 );
+
+
+router.get(
+    '/:id',
+    PatientController.getByIdFromDB
+);
+
 
 router.delete(
     '/soft/:id',
