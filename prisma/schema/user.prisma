@@ -71,7 +71,8 @@ model Patient {
     user User @relation(fields: [email], references: [email])
     appointments Appointment[]
     prescriptions Prescription[]
+    patientHealthData PatientHealthData[]
+    medicalReport MedicalReport[]
 
-    @@map("patients")
-    
+    @@map("patients") 
 }
