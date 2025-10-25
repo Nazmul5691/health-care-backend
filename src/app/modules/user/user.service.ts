@@ -8,6 +8,7 @@ import { Admin, Doctor, Prisma, UserRole, UserStatus } from "@prisma/client";
 import { userSearchableFields } from "./user.constant";
 import { IJWTPayload } from "../../types/common";
 
+
 const createPatient = async (req: Request) => {
 
     if (req.file) {
@@ -69,6 +70,7 @@ const createAdmin = async (req: Request): Promise<Admin> => {
 
     return result;
 };
+
 
 const createDoctor = async (req: Request): Promise<Doctor> => {
 
@@ -161,7 +163,6 @@ const getAllUsers = async (params: any, options: any) => {
 }
 
 
-
 const getMyProfile = async (user: IJWTPayload) => {
     const userInfo = await prisma.user.findUniqueOrThrow({
         where: {
@@ -209,11 +210,30 @@ const getMyProfile = async (user: IJWTPayload) => {
 };
 
 
+const changeProfileStatus = async (id: string, payload: { status: UserStatus }) => {
+    const userData = await prisma.user.findUniqueOrThrow({
+        where: {
+            id
+        }
+    })
+
+    const updateUserStatus = await prisma.user.update({
+        where: {
+            id
+        },
+        data: payload
+    })
+
+    return updateUserStatus;
+};
+
+
 
 export const UserService = {
     createPatient,
     getAllUsers,
     createDoctor,
     createAdmin,
-    getMyProfile
+    getMyProfile,
+    changeProfileStatus
 }
