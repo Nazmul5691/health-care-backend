@@ -5,7 +5,6 @@ import { Secret } from 'jsonwebtoken'
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status"
 import config from "../../../config";
-import { emit } from "process";
 import { jwtHelpers } from "../../helper/jwtHelpers";
 import emailSender from "./emailSender";
 
