@@ -14,7 +14,7 @@ model Appointment {
     payment        Payment?
     prescription   Prescription?
     
-    review Review[]
+    reviews Review[]
 
     @@map("appointments")
     

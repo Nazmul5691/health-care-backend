@@ -162,7 +162,7 @@ const getByIdFromDB = async (id: string): Promise<Doctor | null> => {
                     schedule: true
                 }
             },
-            review: true
+            reviews: true
         },
     });
     return result;
