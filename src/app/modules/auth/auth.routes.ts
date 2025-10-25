@@ -6,6 +6,8 @@ import { UserRole } from '@prisma/client';
 
 const router = express.Router();
 
+
+// no need to log in , if cookie available then get the data , if data get that means you are logged in 
 router.get(
     "/me",
     AuthController.getMe

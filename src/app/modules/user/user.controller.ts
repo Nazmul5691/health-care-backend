@@ -3,6 +3,8 @@ import catchAsync from "../../shared/catchAsync";
 import { UserService } from "./user.service";
 import sendResponse from "../../shared/sendResponse";
 import pick from "../../helper/pick";
+import httpStatus from "http-status";
+import { IJWTPayload } from "../../types/common";
 
 const createPatient = catchAsync(async (req: Request, res: Response) => {
     const result = await UserService.createPatient(req);
@@ -65,10 +67,24 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 })
 
 
+const getMyProfile = catchAsync(async (req: Request & { user?: IJWTPayload }, res: Response) => {
+
+    const user = req.user;
+
+    const result = await UserService.getMyProfile(user as IJWTPayload);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "My profile data fetched!",
+        data: result
+    })
+});
 
 export const UserController = {
     createPatient,
     getAllUsers,
     createAdmin,
-    createDoctor
+    createDoctor,
+    getMyProfile
 }
