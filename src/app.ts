@@ -1,54 +1,59 @@
 import express, { Application, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import globalErrorHandler from './app/middlewares/globalErrorHandler';
-import notFound from './app/middlewares/notFound';
-import config from './config';
 import router from './app/routes';
-import cookieParser from 'cookie-parser'
-import { PaymentController } from './app/modules/payment/payment.controller';
-import cron from 'node-cron';
-import { AppointmentService } from './app/modules/appointment/appointment.service';
+import httpStatus from 'http-status';
+import globalErrorHandler from './app/middlewares/globalErrorHandler';
+import cookieParser from 'cookie-parser';
+import { AppointmentService } from './app/modules/Appointment/appointment.service';
+import cron from 'node-cron'
+import { PaymentController } from './app/modules/Payment/payment.controller';
 
 const app: Application = express();
-
+app.use(cookieParser());
 app.post(
     "/webhook",
     express.raw({ type: "application/json" }),
     PaymentController.handleStripeWebhookEvent
 );
 app.use(cors({
-    origin: 'http://localhost:3001',
+    origin: 'http://localhost:3000',
     credentials: true
 }));
 
 //parser
 app.use(express.json());
-app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+
 
 
 cron.schedule('* * * * *', () => {
     try {
-        console.log("Node cron called at ", new Date())
         AppointmentService.cancelUnpaidAppointments();
-    } catch (err) {
+    }
+    catch (err) {
         console.error(err);
     }
 });
 
-app.use("/api/v1", router);
-
 app.get('/', (req: Request, res: Response) => {
     res.send({
-        message: "Server is running..",
-        environment: config.node_env,
-        uptime: process.uptime().toFixed(2) + " sec",
-        timeStamp: new Date().toISOString()
+        Message: "Ph health care server.."
     })
 });
 
+app.use('/api/v1', router);
+
 app.use(globalErrorHandler);
 
-app.use(notFound);
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.status(httpStatus.NOT_FOUND).json({
+        success: false,
+        message: "API NOT FOUND!",
+        error: {
+            path: req.originalUrl,
+            message: "Your requested path is not found!"
+        }
+    })
+})
 
 export default app;

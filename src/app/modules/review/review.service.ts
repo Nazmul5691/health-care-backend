@@ -1,16 +1,15 @@
-import { hasAutoParseableInput } from "openai/lib/parser";
-import { prisma } from "../../shared/prisma";
-import { IJWTPayload } from "../../types/common";
+import httpStatus from "http-status";
+import prisma from "../../../shared/prisma"
 import ApiError from "../../errors/ApiError";
-import httpStatus from 'http-status'
-import { IOptions, paginationHelper } from "../../helper/paginationHelper";
+import { IAuthUser } from "../../interfaces/common"
+import { IPaginationOptions } from "../../interfaces/pagination";
+import { paginationHelper } from "../../../helpers/paginationHelper";
 import { Prisma } from "@prisma/client";
 
-
-const insertIntoDB = async (user: IJWTPayload, payload: any) => {
+const insertIntoDB = async (user: IAuthUser, payload: any) => {
     const patientData = await prisma.patient.findUniqueOrThrow({
         where: {
-            email: user.email
+            email: user?.email
         }
     });
 
@@ -20,12 +19,12 @@ const insertIntoDB = async (user: IJWTPayload, payload: any) => {
         }
     });
 
-    if (patientData.id !== appointmentData.patientId) {
+    if (!(patientData.id === appointmentData.patientId)) {
         throw new ApiError(httpStatus.BAD_REQUEST, "This is not your appointment!")
     }
 
-    return await prisma.$transaction(async (tnx) => {
-        const result = await tnx.review.create({
+    return await prisma.$transaction(async (tx) => {
+        const result = await tx.review.create({
             data: {
                 appointmentId: appointmentData.id,
                 doctorId: appointmentData.doctorId,
@@ -35,21 +34,18 @@ const insertIntoDB = async (user: IJWTPayload, payload: any) => {
             }
         });
 
-        const avgRating = await tnx.review.aggregate({
+        const averageRating = await tx.review.aggregate({
             _avg: {
                 rating: true
-            },
-            where: {
-                doctorId: appointmentData.doctorId
             }
-        })
+        });
 
-        await tnx.doctor.update({
+        await tx.doctor.update({
             where: {
-                id: appointmentData.doctorId
+                id: result.doctorId
             },
             data: {
-                averageRating: avgRating._avg.rating as number
+                averageRating: averageRating._avg.rating as number
             }
         })
 
@@ -57,10 +53,9 @@ const insertIntoDB = async (user: IJWTPayload, payload: any) => {
     })
 };
 
-
 const getAllFromDB = async (
     filters: any,
-    options: IOptions,
+    options: IPaginationOptions,
 ) => {
     const { limit, page, skip } = paginationHelper.calculatePagination(options);
     const { patientEmail, doctorEmail } = filters;

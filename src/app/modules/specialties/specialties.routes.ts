@@ -1,9 +1,9 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { SpecialtiesController } from './specialties.controller';
+import { fileUploader } from '../../../helpers/fileUploader';
 import { SpecialtiesValidtaion } from './specialties.validation';
 import auth from '../../middlewares/auth';
 import { UserRole } from '@prisma/client';
-import { fileUploader } from '../../helper/fileUploader';
 
 
 const router = express.Router();
@@ -43,7 +43,7 @@ router.post(
 
 router.delete(
     '/:id',
-    auth(UserRole.ADMIN, UserRole.ADMIN),
+    auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
     SpecialtiesController.deleteFromDB
 );
 

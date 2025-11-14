@@ -1,8 +1,30 @@
 import { Request, Response } from "express";
-import catchAsync from "../../shared/catchAsync";
+import catchAsync from "../../../shared/catchAsync";
 import { PaymentService } from "./payment.service";
-import sendResponse from "../../shared/sendResponse";
-import { stripe } from "../../helper/stripe";
+import sendResponse from "../../../shared/sendResponse";
+import httpStatus from "http-status";
+import { stripe } from "../../../helpers/stripe";
+
+const initPayment = catchAsync(async (req: Request, res: Response) => {
+    const { appointmentId } = req.params;
+    const result = await PaymentService.initPayment(appointmentId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Payment initiate successfully',
+        data: result,
+    });
+});
+
+const validatePayment = catchAsync(async (req: Request, res: Response) => {
+    const result = await PaymentService.validatePayment(req.query);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Payment validate successfully',
+        data: result,
+    });
+});
 
 const handleStripeWebhookEvent = catchAsync(async (req: Request, res: Response) => {
 
@@ -14,7 +36,10 @@ const handleStripeWebhookEvent = catchAsync(async (req: Request, res: Response) 
         event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
     } catch (err: any) {
         console.error("⚠️ Webhook signature verification failed:", err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+    if (!event) {
+        return;
     }
     const result = await PaymentService.handleStripeWebhookEvent(event);
 
@@ -27,5 +52,7 @@ const handleStripeWebhookEvent = catchAsync(async (req: Request, res: Response) 
 });
 
 export const PaymentController = {
+    initPayment,
+    validatePayment,
     handleStripeWebhookEvent
 }
