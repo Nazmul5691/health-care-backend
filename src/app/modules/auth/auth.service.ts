@@ -1,12 +1,12 @@
 import { UserStatus } from "@prisma/client";
+import * as bcrypt from 'bcryptjs';
+import httpStatus from "http-status";
+import { Secret } from "jsonwebtoken";
+import config from "../../../config";
 import { jwtHelpers } from "../../../helpers/jwtHelpers";
 import prisma from "../../../shared/prisma";
-import * as bcrypt from 'bcryptjs'
-import config from "../../../config";
-import { Secret } from "jsonwebtoken";
-import emailSender from "./emailSender";
 import ApiError from "../../errors/ApiError";
-import httpStatus from "http-status";
+import emailSender from "./emailSender";
 
 const loginUser = async (payload: {
     email: string,
@@ -175,17 +175,76 @@ const resetPassword = async (token: string, payload: { id: string, password: str
 const getMe = async (user: any) => {
     const accessToken = user.accessToken;
     const decodedData = jwtHelpers.verifyToken(accessToken, config.jwt.jwt_secret as Secret);
-    
+
     const userData = await prisma.user.findUniqueOrThrow({
         where: {
             email: decodedData.email,
             status: UserStatus.ACTIVE
+        },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            needPasswordChange: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+            admin: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                    contactNumber: true,
+                    isDeleted: true,
+                    createdAt: true,
+                    updatedAt: true,
+                }
+            },
+            doctor: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                    contactNumber: true,
+                    address: true,
+                    registrationNumber: true,
+                    experience: true,
+                    gender: true,
+                    appointmentFee: true,
+                    qualification: true,
+                    currentWorkingPlace: true,
+                    designation: true,
+                    averageRating: true,
+                    isDeleted: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    doctorSpecialties: {
+                        include: {
+                            specialities: true
+                        }
+                    }
+                }
+            },
+            patient: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    profilePhoto: true,
+                    contactNumber: true,
+                    address: true,
+                    isDeleted: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    patientHealthData: true,
+                }
+            }
         }
     });
 
-    const {email, role} = userData;
-
-    return {email, role};
+    return userData;
 }
 
 

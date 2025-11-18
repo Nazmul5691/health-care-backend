@@ -1,13 +1,13 @@
-import express from 'express';
-import { ScheduleController } from './schedule.controller';
-import auth from '../../middlewares/auth';
 import { UserRole } from '@prisma/client';
+import express from 'express';
+import auth from '../../middlewares/auth';
+import { ScheduleController } from './schedule.controller';
 
 const router = express.Router();
 
 router.get(
     '/',
-    auth(UserRole.DOCTOR),
+    auth(UserRole.DOCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
     ScheduleController.getAllFromDB
 );
 
@@ -25,7 +25,7 @@ router.get(
 router.post(
     '/',
     auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-    ScheduleController.inserIntoDB
+    ScheduleController.insertIntoDB
 );
 
 

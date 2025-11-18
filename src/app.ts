@@ -1,12 +1,10 @@
-import express, { Application, NextFunction, Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import router from './app/routes';
+import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
-import cookieParser from 'cookie-parser';
-import { AppointmentService } from './app/modules/Appointment/appointment.service';
-import cron from 'node-cron'
 import { PaymentController } from './app/modules/Payment/payment.controller';
+import router from './app/routes';
 
 const app: Application = express();
 app.use(cookieParser());
@@ -23,17 +21,18 @@ app.use(cors({
 //parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// app.use(sanitizeInput); // ADD THIS LINE
 
 
 
-cron.schedule('* * * * *', () => {
-    try {
-        AppointmentService.cancelUnpaidAppointments();
-    }
-    catch (err) {
-        console.error(err);
-    }
-});
+// cron.schedule('* * * * *', () => {
+//     try {
+//         AppointmentService.cancelUnpaidAppointments();
+//     }
+//     catch (err) {
+//         console.error(err);
+//     }
+// });
 
 app.get('/', (req: Request, res: Response) => {
     res.send({

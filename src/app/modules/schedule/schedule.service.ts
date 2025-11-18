@@ -1,10 +1,10 @@
-import { addHours, addMinutes, format } from 'date-fns';
-import prisma from '../../../shared/prisma';
 import { Prisma, Schedule } from '@prisma/client';
-import { IFilterRequest, ISchedule } from './schedule.interface';
-import { IPaginationOptions } from '../../interfaces/pagination';
+import { addHours, addMinutes, format } from 'date-fns';
 import { paginationHelper } from '../../../helpers/paginationHelper';
+import prisma from '../../../shared/prisma';
 import { IAuthUser } from '../../interfaces/common';
+import { IPaginationOptions } from '../../interfaces/pagination';
+import { IFilterRequest, ISchedule } from './schedule.interface';
 
 const convertDateTime = async (date: Date) => {
     const offset = date.getTimezoneOffset() * 60000;
@@ -14,7 +14,7 @@ const convertDateTime = async (date: Date) => {
 const inserIntoDB = async (payload: ISchedule): Promise<Schedule[]> => {
     const { startDate, endDate, startTime, endTime } = payload;
 
-    const interverlTime = 30;
+    const intervalTime = 30;
 
     const schedules = [];
 
@@ -46,11 +46,11 @@ const inserIntoDB = async (payload: ISchedule): Promise<Schedule[]> => {
         while (startDateTime < endDateTime) {
             // const scheduleData = {
             //     startDateTime: startDateTime,
-            //     endDateTime: addMinutes(startDateTime, interverlTime)
+            //     endDateTime: addMinutes(startDateTime, intervalTime)
             // }
 
             const s = await convertDateTime(startDateTime);
-            const e = await convertDateTime(addMinutes(startDateTime, interverlTime))
+            const e = await convertDateTime(addMinutes(startDateTime, intervalTime))
 
             const scheduleData = {
                 startDateTime: s,
@@ -71,7 +71,7 @@ const inserIntoDB = async (payload: ISchedule): Promise<Schedule[]> => {
                 schedules.push(result);
             }
 
-            startDateTime.setMinutes(startDateTime.getMinutes() + interverlTime);
+            startDateTime.setMinutes(startDateTime.getMinutes() + intervalTime);
         }
 
         currentDate.setDate(currentDate.getDate() + 1);
@@ -91,22 +91,48 @@ const getAllFromDB = async (
     const andConditions = [];
 
     if (startDate && endDate) {
-        andConditions.push({
-            AND: [
-                {
-                    startDateTime: {
-                        gte: startDate
-                    }
-                },
-                {
-                    endDateTime: {
-                        lte: endDate
-                    }
-                }
-            ]
-        })
-    };
+        // Both dates provided - find schedules within the date range
+        const startOfDay = new Date(startDate as string);
+        startOfDay.setUTCHours(0, 0, 0, 0);
 
+        const endOfDay = new Date(endDate as string);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        andConditions.push({
+            startDateTime: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        });
+    } else if (startDate) {
+        // Only start date - find schedules on that specific day
+        const startOfDay = new Date(startDate as string);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(startDate as string);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        andConditions.push({
+            startDateTime: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        });
+    } else if (endDate) {
+        // Only end date - find schedules on that specific day
+        const startOfDay = new Date(endDate as string);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(endDate as string);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        andConditions.push({
+            startDateTime: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        });
+    }
 
     if (Object.keys(filterData).length > 0) {
         andConditions.push({
@@ -149,6 +175,7 @@ const getAllFromDB = async (
                     createdAt: 'desc',
                 }
     });
+
     const total = await prisma.schedule.count({
         where: {
             ...whereConditions,
@@ -174,7 +201,7 @@ const getByIdFromDB = async (id: string): Promise<Schedule | null> => {
             id,
         },
     });
-    //console.log(result?.startDateTime.getHours() + ":" + result?.startDateTime.getMinutes())
+
     return result;
 };
 

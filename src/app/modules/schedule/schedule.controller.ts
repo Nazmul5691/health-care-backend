@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import catchAsync from "../../../shared/catchAsync";
-import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
-import { ScheduleService } from "./schedule.sevice";
+import catchAsync from "../../../shared/catchAsync";
 import pick from "../../../shared/pick";
+import sendResponse from "../../../shared/sendResponse";
 import { IAuthUser } from "../../interfaces/common";
+import { ScheduleService } from "./schedule.service";
 
-const inserIntoDB = catchAsync(async (req: Request, res: Response) => {
+const insertIntoDB = catchAsync(async (req: Request, res: Response) => {
     const result = await ScheduleService.inserIntoDB(req.body);
 
     sendResponse(res, {
@@ -28,7 +28,8 @@ const getAllFromDB = catchAsync(async (req: Request & { user?: IAuthUser }, res:
         statusCode: httpStatus.OK,
         success: true,
         message: "Schedule fetched successfully!",
-        data: result
+        data: result.data,
+        meta: result.meta
     });
 });
 
@@ -56,7 +57,7 @@ const deleteFromDB = catchAsync(async (req: Request, res: Response) => {
 
 
 export const ScheduleController = {
-    inserIntoDB,
+    insertIntoDB,
     getAllFromDB,
     getByIdFromDB,
     deleteFromDB
