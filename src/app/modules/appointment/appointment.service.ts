@@ -206,6 +206,8 @@ const getAllFromDB = async (
     };
 };
 
+
+//change appointment status
 const changeAppointmentStatus = async (appointmentId: string, status: AppointmentStatus, user: IAuthUser) => {
     const appointmentData = await prisma.appointment.findUniqueOrThrow({
         where: {
