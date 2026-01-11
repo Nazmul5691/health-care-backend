@@ -4,7 +4,7 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import cron from 'node-cron';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
-import { PaymentController } from './app/modules/Payment/payment.controller';
+import { PaymentController } from './app/modules/payment/payment.controller';
 import router from './app/routes';
 import { AppointmentService } from './app/modules/appointment/appointment.service';
 

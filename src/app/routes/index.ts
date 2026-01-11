@@ -1,7 +1,7 @@
 import express from 'express';
 import { apiLimiter } from '../middlewares/rateLimiter';
 
-import { userRoutes } from '../modules/User/user.routes';
+import { userRoutes } from '../modules/user/user.routes';
 import { SpecialtiesRoutes } from '../modules/specialties/specialties.routes';
 import { AdminRoutes } from '../modules/admin/admin.routes';
 import { AuthRoutes } from '../modules/auth/auth.routes';
@@ -10,7 +10,7 @@ import { PatientRoutes } from '../modules/patient/patient.route';
 import { ScheduleRoutes } from '../modules/schedule/schedule.routes';
 import { DoctorScheduleRoutes } from '../modules/doctorSchedule/doctorSchedule.routes';
 import { AppointmentRoutes } from '../modules/appointment/appointment.routes';
-import { PaymentRoutes } from '../modules/Payment/payment.routes';
+import { PaymentRoutes } from '../modules/payment/payment.routes';
 import { PrescriptionRoutes } from '../modules/prescription/prescription.routes';
 import { ReviewRoutes } from '../modules/review/review.routes';
 import { MetaRoutes } from '../modules/meta/meta.routes';
