@@ -9,6 +9,7 @@ import router from './app/routes';
 import { AppointmentService } from './app/modules/appointment/appointment.service';
 
 const app: Application = express();
+app.set('trust proxy', 1);
 app.use(cookieParser());
 
 app.post(
