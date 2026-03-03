@@ -41,6 +41,7 @@ const getAllFromDB = async (options: IPaginationOptions) => {
             total,
             page,
             limit,
+            totalPages: Math.ceil(total / limit), 
         },
         data: result,
     };
