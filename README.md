@@ -71,7 +71,7 @@ src/
 └── server.ts             # Server entry point & listener
 prisma/
 └── schema/               # Modular Prisma schema files
-
+```
 ---
 
 ## ⚙️ Setup & Installation
